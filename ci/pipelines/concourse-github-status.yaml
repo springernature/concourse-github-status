@@ -1,0 +1,71 @@
+groups: []
+resource_types:
+  - name: github-status
+    type: docker-image
+    source:
+      repository: resource/github-status
+resources:
+- name: status
+  type: github-status
+  source:
+    repo: hpe-cloud-garage/concourse-github-status
+    access_token: {{github_access_token}}
+- name: resource
+  type: docker-image
+  source:
+    repository: resource/github-status
+- name: src
+  type: git
+  source:
+    branch: develop
+    uri: https://github.com/hpe-cloud-garage/concourse-github-status
+jobs:
+- name: arbitrary-step
+  plan:
+  - get: src
+    trigger: true
+  - get: resource
+    trigger: true
+  - task: arbitrary-step
+    config:
+      platform: linux
+      image: docker:///busybox#musl
+      run:
+        path: "true"
+        args: []
+      inputs:
+      - name: src
+        path: ""
+- name: path-to-pending
+  plan:
+  - get: src
+    passed:
+    - arbitrary-step
+    trigger: true
+  - put: status
+    params:
+      context: should-be-pending
+      path: src
+      state: pending
+- name: path-to-success
+  plan:
+  - get: src
+    passed:
+    - arbitrary-step
+    trigger: true
+  - put: status
+    params:
+      context: should-be-success
+      path: src
+      state: success
+- name: path-to-failure
+  plan:
+  - get: src
+    passed:
+    - arbitrary-step
+    trigger: true
+  - put: status
+    params:
+      context: should-be-failure
+      path: src
+      state: failure
