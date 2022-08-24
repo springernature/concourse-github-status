@@ -1,12 +1,7 @@
-FROM colstrom/concourse-fuselage
+FROM alpine
 
-RUN apk-install git ca-certificates libressl-dev \
-    && update-ca-certificates \
-    && apk update \
-    && apk del openssl-dev \
-    && rm -vf /var/cache/apk/* \
-    && gem-install concourse-github-status
+RUN apk add --update git ca-certificates libressl-dev ruby
+RUN gem install concourse-fuselage concourse-github-status
 
 WORKDIR /opt/resource
-
-RUN find $(gem environment gemdirs) -type f -path '*/concourse-github-status-*/bin/*' -exec ln -s '{}' \;
+ADD bin/* /opt/resource
