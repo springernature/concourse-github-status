@@ -1,10 +1,3 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env sh
 
-require 'github-status/check'
-
-check = GitHubStatus::Check.new
-
-unless check.run
-  STDERR.puts "Failed to fetch status"
-  abort
-end
+./check.rb || true
