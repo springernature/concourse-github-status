@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-./check.rb || true
+/opt/resource/check.rb || true

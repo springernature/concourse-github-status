@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-./in.rb || true
+/opt/resource/in.rb || true
