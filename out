@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+payload="$(cat <&0)"
+destination=$1
+
+if [ -z "$destination" ]; then
+  echo "usage: $0 <path/to/destination>"
+  exit 1
+fi
+
+access_token=$(jq -r '.source.access_token // ""' <<< "$payload")
+repo=$(jq -r '.source.repo // ""' <<< "$payload")
+git_path=$(jq -r '.source.path // "git"' <<< "$payload")
+context=$(jq -r '.params.context // "'"$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME"'"' <<< "$payload")
+state=$(jq -r '.params.state // ""' <<< "$payload")
+
+git_ref=$(cat $destination/$git_path/.git/ref)
+target_url=$(echo $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)
+
+payload=$(jq -nc "{
+  state: $(echo $state | jq -R .),
+  target_url: $(echo $target_url | jq -R .),
+  context: $(echo $context | jq -R .),
+}")
+
+curl \
+  -s \
+  -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer $access_token" \
+  https://api.github.com/repos/$repo/statuses/$git_ref \
+  -d $payload
+
+jq -nc "{
+  version: {
+    contextSha: $(echo $state@$context@$git_ref | jq -R .)
+    },
+}" >&3

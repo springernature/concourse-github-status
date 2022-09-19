@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-/opt/resource/out.rb $1 || true

@@ -1,7 +1,10 @@
 FROM alpine
 
-RUN apk add --update git ca-certificates libressl-dev ruby
-RUN gem install faraday-retry concourse-fuselage concourse-github-status
+RUN apk update && apk upgrade && apk --no-cache add \
+    jq \
+    curl \
+    bash
 
-WORKDIR /opt/resource
-ADD bin/* /opt/resource/
+COPY in /opt/resource/in
+COPY out /opt/resource/out
+COPY check /opt/resource/check
