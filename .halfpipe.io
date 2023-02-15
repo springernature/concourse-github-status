@@ -4,6 +4,7 @@ pipeline: concourse-github-status-resource
 feature_toggles:
 - update-pipeline
 
+triggers:
 - type: timer
   cron: "15 3 * * 3" # 03:15 every wednesday
 
